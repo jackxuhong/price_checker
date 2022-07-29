@@ -1,11 +1,20 @@
 from bs4 import BeautifulSoup
+from datetime import datetime
 from numpy.random import default_rng
 from requests_html import HTMLSession
 from time import sleep
 
 
-def stock_checker(product_urls):
+def send_alert(alerts):
+    for alert in alerts:
+        print(alert)
+    pass
+
+
+def check_stock(product_urls):
     session = HTMLSession()
+
+    alerts = []
 
     for product_url in product_urls:
         r = session.get(product_url)
@@ -30,15 +39,20 @@ def stock_checker(product_urls):
                     break
 
             if in_stock:
-                print(f'{item} is in stock @ {price} :)')
-                # send email alert
+                print(f'{datetime.now()} - {item} is IN STOCK @ {price} :)')
+                alert = f'{item} ({product_url}) is IN STOCK @ {price}!'
+                alerts.append(alert)
             else:
-                print(f"{item} is out of stock @ {price} :(")
+                print(
+                    f"{datetime.now()} - {item} is out of stock @ {price} :(")
 
         rng = default_rng()
         time_to_sleep = rng.uniform(1, 5)
-        print(f'Sleeping for {time_to_sleep} seconds...')
+        print(f'{datetime.now()} - Sleeping for {time_to_sleep} seconds...')
         sleep(time_to_sleep)
+
+    if alerts:
+        send_alert(alerts)
 
 
 def main():
@@ -46,8 +60,9 @@ def main():
         'https://ca.store.ui.com/ca/en/products/dream-router',
         'https://ca.store.ui.com/ca/en/products/unifi-ap-6-lite',
         'https://ca.store.ui.com/ca/en/products/unifi-switch-lite-8-poe',
-        'https://ca.store.ui.com/ca/en/products/dream-machine-se']
-    stock_checker(product_urls)
+        'https://ca.store.ui.com/ca/en/products/dream-machine-se',
+        'https://ca.store.ui.com/ca/en/products/unifi-dream-machine']
+    check_stock(product_urls)
 
     pass
 
