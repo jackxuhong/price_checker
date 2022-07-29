@@ -43,7 +43,7 @@ def check_stock(product_urls):
 
         r = session.get(product_url)
         if r.status_code == 200:
-            r.html.render()
+            r.html.render(tiemout=30)
             item = 'No name'
             price = 0
             in_stock = False
