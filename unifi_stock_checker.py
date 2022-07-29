@@ -30,9 +30,10 @@ def stock_checker(product_urls):
                     break
 
             if in_stock:
-                print(f'{item} in stock @ {price}')
+                print(f'{item} is in stock @ {price} :)')
+                # send email alert
             else:
-                print(f"{item} is out of stock @ {price}")
+                print(f"{item} is out of stock @ {price} :(")
 
         rng = default_rng()
         time_to_sleep = rng.uniform(1, 5)
@@ -40,9 +41,16 @@ def stock_checker(product_urls):
         sleep(time_to_sleep)
 
 
-product_urls = [
-    'https://ca.store.ui.com/ca/en/products/dream-router',
-    'https://ca.store.ui.com/ca/en/products/unifi-ap-6-lite',
-    'https://ca.store.ui.com/ca/en/products/unifi-switch-lite-8-poe',
-    'https://ca.store.ui.com/ca/en/collections/bestseller/products/dream-machine-se']
-stock_checker(product_urls)
+def main():
+    product_urls = [
+        'https://ca.store.ui.com/ca/en/products/dream-router',
+        'https://ca.store.ui.com/ca/en/products/unifi-ap-6-lite',
+        'https://ca.store.ui.com/ca/en/products/unifi-switch-lite-8-poe',
+        'https://ca.store.ui.com/ca/en/products/dream-machine-se']
+    stock_checker(product_urls)
+
+    pass
+
+
+if __name__ == '__main__':
+    main()
