@@ -10,6 +10,8 @@ from time import sleep
 load_dotenv()
 
 _PRODUCT_FILE = os.getenv('PRODUCT_FILE')
+_MIN_SLEEP = int(os.getenv('MIN_SLEEP'))
+_MAX_SLEEP = int(os.getenv('MAX_SLEEP'))
 _API_URL = os.getenv('TELEGRAM_API_URL')
 _BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 _CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
@@ -69,7 +71,7 @@ def check_stock(product_urls):
                     f"{datetime.now()} - {item} is out of stock @ {price} :(")
 
         rng = default_rng()
-        time_to_sleep = rng.uniform(1, 5)
+        time_to_sleep = rng.uniform(_MIN_SLEEP, _MAX_SLEEP)
         print(f'{datetime.now()} - Sleeping for {time_to_sleep} seconds...')
         sleep(time_to_sleep)
 
