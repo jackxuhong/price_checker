@@ -8,6 +8,8 @@ from requests_html import HTMLSession
 from time import sleep
 
 load_dotenv()
+
+_PRODUCT_FILE = os.getenv('PRODUCT_FILE')
 _API_URL = os.getenv('TELEGRAM_API_URL')
 _BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 _CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
@@ -17,7 +19,13 @@ def send_alert(alerts):
     for alert in alerts:
         url = _API_URL + _BOT_TOKEN + '/sendMessage?chat_id=' + \
             _CHAT_ID + '&parse_mode=Markdown&text=' + alert
-        requests.get(url)
+        r = requests.get(url)
+        if r.status_code == 200:
+            print(
+                f'{datetime.now()} - Successfully sent a Telegram alert [{alert}]')
+        else:
+            print(
+                f'{datetime.now()} - Failed to send Telegram alert [{alert}], err = {r.status_code}')
     pass
 
 
@@ -27,6 +35,10 @@ def check_stock(product_urls):
     alerts = []
 
     for product_url in product_urls:
+        # Skip blank URL
+        if len(product_url.strip()) == 0:
+            break
+
         r = session.get(product_url)
         if r.status_code == 200:
             r.html.render()
@@ -63,15 +75,14 @@ def check_stock(product_urls):
 
     if alerts:
         send_alert(alerts)
+    else:
+        print(f'{datetime.now()} - Nothing is available :(')
 
 
 def main():
-    product_urls = [
-        'https://ca.store.ui.com/ca/en/products/dream-router',
-        'https://ca.store.ui.com/ca/en/products/unifi-ap-6-lite',
-        'https://ca.store.ui.com/ca/en/products/unifi-switch-lite-8-poe',
-        'https://ca.store.ui.com/ca/en/products/dream-machine-se',
-        'https://ca.store.ui.com/ca/en/products/unifi-dream-machine']
+    with open(_PRODUCT_FILE) as file:
+        product_urls = file.readlines()
+
     check_stock(product_urls)
 
     pass
