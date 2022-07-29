@@ -1,13 +1,23 @@
 from bs4 import BeautifulSoup
 from datetime import datetime
+from dotenv import load_dotenv
 from numpy.random import default_rng
+import os
+import requests
 from requests_html import HTMLSession
 from time import sleep
+
+load_dotenv()
+_API_URL = os.getenv('TELEGRAM_API_URL')
+_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
 
 def send_alert(alerts):
     for alert in alerts:
-        print(alert)
+        url = _API_URL + _BOT_TOKEN + '/sendMessage?chat_id=' + \
+            _CHAT_ID + '&parse_mode=Markdown&text=' + alert
+        requests.get(url)
     pass
 
 
