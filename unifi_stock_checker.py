@@ -75,8 +75,8 @@ def check_stock(product_urls):
     alerts = []
 
     for product_url in product_urls:
-        # Skip blank URL
-        if len(product_url.strip()) == 0:
+        # Skip blank URL or commented out URL
+        if len(product_url.strip()) == 0 or product_url.strip().startswith('#'):
             break
 
         r = session.get(product_url)
