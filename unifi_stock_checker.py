@@ -1,4 +1,3 @@
-from bs4 import BeautifulSoup
 from datetime import datetime
 from dotenv import load_dotenv
 from numpy.random import default_rng
@@ -81,9 +80,9 @@ def check_stock(product_urls):
 
         r = session.get(product_url)
         if r.status_code == 200:
-            r.html.render(timeout=30)
+            r.html.render(timeout=30, sleep=2)
             item = 'No name'
-            price = 0
+            price = ''
             in_stock = False
 
             item_div = r.html.find('.sc-y8tnx3-6', first=True)
@@ -94,9 +93,9 @@ def check_stock(product_urls):
             if price_div:
                 price = price_div.text
 
-            divs = r.html.find('.sc-plhx78-2')
+            divs = r.html.find('.sc-1pbdt8j-25')
             for div in divs:
-                if 'Add to Cart' in div.text:
+                if 'Add to Cart' in div.text and price:
                     in_stock = True
                     break
 
