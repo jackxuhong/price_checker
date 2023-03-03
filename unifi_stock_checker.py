@@ -3,10 +3,11 @@ from dotenv import load_dotenv
 from numpy.random import default_rng
 import os
 import requests
-from requests_html import HTMLSession
 import sqlite3
 import sys
 from time import sleep
+from selenium import webdriver
+from selenium.webdriver.common.by import By
 
 load_dotenv()
 
@@ -69,7 +70,12 @@ def check_stock(product_urls):
     cur.execute("CREATE TABLE IF NOT EXISTS product_logs (log_date TEXT, product_name TEXT, price REAL, in_stock TEXT, log_timestamp TEXT)")
     con.commit()
 
-    session = HTMLSession()
+    options = webdriver.ChromeOptions()
+    options.add_experimental_option("excludeSwitches",["ignore-certificate-errors"])
+    options.add_argument('--disable-gpu')
+    options.add_argument('--headless')
+
+    browser = webdriver.Chrome(chrome_options=options)
 
     alerts = []
 
@@ -78,38 +84,36 @@ def check_stock(product_urls):
         if len(product_url.strip()) == 0 or product_url.strip().startswith('#'):
             continue
 
-        r = session.get(product_url)
-        if r.status_code == 200:
-            r.html.render(timeout=30, sleep=2)
-            item = 'No name'
-            price = ''
-            in_stock = False
+        item = 'No name'
+        price = ''
+        in_stock = False
 
-            item_div = r.html.find('.sc-y8tnx3-6', first=True)
-            if item_div:
-                item = item_div.text
+        browser.get(product_url)
 
-            price_div = r.html.find('.sc-1pbdt8j-9', first=True)
-            if price_div:
-                price = price_div.text
+        item_div = browser.find_element(By.CLASS_NAME, 'sc-y8tnx3-6')
+        if item_div:
+            item = item_div.text
 
-            divs = r.html.find('.sc-1pbdt8j-25')
-            for div in divs:
-                if 'Add to Cart' in div.text and price:
-                    in_stock = True
-                    break
+        price_div = browser.find_element(By.CLASS_NAME, 'sc-1pbdt8j-9')
+        if price_div:
+            price = price_div.text
 
-            if in_stock:
-                print(f'{datetime.now()} - {item} is IN STOCK @ {price} :)')
-                alert = f'{item} ({product_url}) is IN STOCK @ {price}!'
-                alerts.append(alert)
-            else:
-                print(
-                    f"{datetime.now()} - {item} is out of stock @ {price} :(")
+        cart_div = browser.find_element(By.CLASS_NAME, 'sc-1pbdt8j-25')
 
-            cur.execute(
-                f"INSERT INTO product_logs VALUES ('{datetime.now():%Y-%m-%d}', '{item}', '{price}', '{in_stock}', '{datetime.now()}')")
-            con.commit()
+        if cart_div and cart_div.text == 'Add to Cart':
+            in_stock = True
+
+        if in_stock:
+            print(f'{datetime.now()} - {item} is IN STOCK @ {price} :)')
+            alert = f'{item} ({product_url}) is IN STOCK @ {price}!'
+            alerts.append(alert)
+        else:
+            print(
+                f"{datetime.now()} - {item} is out of stock @ {price} :(")
+
+        cur.execute(
+            f"INSERT INTO product_logs VALUES ('{datetime.now():%Y-%m-%d}', '{item}', '{price}', '{in_stock}', '{datetime.now()}')")
+        con.commit()
 
         rng = default_rng()
         time_to_sleep = rng.uniform(_MIN_SLEEP, _MAX_SLEEP)
